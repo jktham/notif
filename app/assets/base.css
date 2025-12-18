@@ -1,0 +1,34 @@
+:root {
+  --fg: #ffffff;
+  --fg2: #aaaaaa;
+  --bg: #101010;
+  --bg2: #202020;
+  --bg3: #303030;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button, input {
+  appearance: none;
+  outline: none;
+  border: none;
+}
+
+body {
+  min-height: 100dvh;
+  color: var(--fg);
+  background: var(--bg);
+  font-size: 1rem;
+  font-family: "Roboto", Arial, Helvetica, sans-serif;
+}
