@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import "assets/base.css";
 
+// notifications
 let permissionGranted = ref(Notification.permission === "granted");
 
 const requestPermissions = async () => {
@@ -10,30 +11,112 @@ const requestPermissions = async () => {
 }
 
 const sendLocalNotification = () => {
-  let n = new Notification("Hello from Notif!", {
-    body: "This is a local notification.",
+  let n = new Notification("hi c:", {
+    body: "local",
     icon: "/favicon.ico"
   });
 }
+
+const sendRemoteNotification = async () => {
+  await $fetch("/api/send", {
+    method: "post",
+    body: {
+      title: "hi c:",
+      body: "remote",
+      icon: "/favicon.ico"
+    },
+  }).then(console.log);
+}
+
+// service worker
+let registered = ref(false);
+
+const registerSW = async () => {
+  navigator.serviceWorker.register("/sw.js");
+  navigator.serviceWorker.ready.then(async registration => {
+    console.log("Service Worker ready:", registration);
+
+    let sub = await registration.pushManager.getSubscription().then(async subscription => {
+      if (subscription) {
+        return subscription;
+      }
+
+      const vapidPublicKey = await $fetch('/api/vapidPublicKey');
+
+      return await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: vapidPublicKey,
+      });
+    });
+
+    await $fetch('/api/subscribe', {
+      method: 'post',
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        subscription: sub
+      }),
+    }).then(console.log);
+
+    registered.value = true;
+  });
+};
+
+const unregisterSW = async () => {
+  let registration = await navigator.serviceWorker.getRegistration();
+  if (registration) {
+    let sub = await registration.pushManager.getSubscription();
+
+    await $fetch('/api/unsubscribe', {
+      method: 'post',
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        subscription: sub
+      }),
+    }).then(console.log);
+
+    if (sub) {
+      await sub.unsubscribe();
+    }
+    await registration.unregister();
+  }
+  
+  registered.value = false;
+};
+
+const reregisterSW = async () => {
+  await unregisterSW();
+  await registerSW();
+}
+
+await registerSW();
+
 </script>
 
 <template>
   <div class="app">
     <header>
-      <h1 class="title">Notif</h1>
+      <h1 class="title">notif</h1>
     </header>
     <main>
       <div class="row">
-        <span>Notification permissions: {{permissionGranted}}</span>
-        <button @click="requestPermissions">Request</button>
+        <span>notification permissions: {{permissionGranted}}</span>
+        <button @click="requestPermissions">request</button>
       </div>
       <div class="row">
-        <span>Test local notification</span>
-        <button @click="sendLocalNotification">Send</button>
+        <span>test local notification</span>
+        <button @click="sendLocalNotification">send</button>
       </div>
       <div class="row">
-        <span>Test remote notification</span>
-        <button>Send</button>
+        <span>test remote notification</span>
+        <button @click="sendRemoteNotification">send</button>
+      </div>
+      <div class="row">
+        <span>serviceworker and webpush: {{registered}}</span>
+        <button @click="reregisterSW">reregister</button>
       </div>
     </main>
   </div>

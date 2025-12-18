@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   ssr: false,
   app: {
     head: {
-      title: "Notif",
+      title: "notif",
     },
   },
 })
