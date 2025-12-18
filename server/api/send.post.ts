@@ -33,5 +33,5 @@ export default defineEventHandler(async event => {
   }
 
   setResponseStatus(event, 200);
-  return `sent ${count} notifications`;
+  return `successfully sent ${count} notifications`;
 });
