@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import "assets/base.css";
-import { type NotifContent } from '~~/server/api/send.post';
+import { type NotifContent } from '~~/server/types';
 
 // notifications
 let notificationsGranted = ref(Notification.permission === "granted");

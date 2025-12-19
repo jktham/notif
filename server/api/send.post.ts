@@ -1,5 +1,6 @@
 import webpush, { PushSubscription } from "web-push";
 import { getSubs } from "../subs";
+import { NotifContent } from "../types";
 
 if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
   console.log("missing vapid keys, generated new:", webpush.generateVAPIDKeys());
@@ -10,12 +11,6 @@ webpush.setVapidDetails(
 	process.env.VAPID_PUBLIC_KEY ?? "",
 	process.env.VAPID_PRIVATE_KEY ?? ""
 );
-
-export type NotifContent = {
-  title: string,
-  body: string,
-  icon: string,
-};
 
 export default defineEventHandler(async event => {
   let content = await readBody<NotifContent>(event);
