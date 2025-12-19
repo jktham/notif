@@ -24,11 +24,11 @@ export default defineEventHandler(async event => {
         body: body.body ?? "",
         icon: body.icon ?? ""
       }));
-      console.log("sent notification:", res.statusCode);
+      console.log(`sent notification: ${sub.endpoint.slice(-10)}`);
       count++;
 
     } catch (e) {
-      console.error("error sending notification:", e);
+      console.error(`error sending notification: ${sub.endpoint.slice(-10)}, ${e}`);
     }
   }
 

@@ -3,11 +3,11 @@ import { ref } from 'vue';
 import "assets/base.css";
 
 // notifications
-let permissionGranted = ref(Notification.permission === "granted");
+let notificationsGranted = ref(Notification.permission === "granted");
 
 const requestPermissions = async () => {
   let p = await Notification.requestPermission();
-  permissionGranted.value = (p === "granted");
+  notificationsGranted.value = (p === "granted");
 }
 
 const sendLocalNotification = () => {
@@ -29,12 +29,14 @@ const sendRemoteNotification = async () => {
 }
 
 // service worker
-let registered = ref(false);
+let swReady = ref(false);
+let swBusy = ref(false);
 
 const registerSW = async () => {
+  swBusy.value = true;
   navigator.serviceWorker.register("/sw.js");
   navigator.serviceWorker.ready.then(async registration => {
-    console.log("Service Worker ready:", registration);
+    console.log("service worker ready");
 
     let sub = await registration.pushManager.getSubscription().then(async subscription => {
       if (subscription) {
@@ -59,14 +61,16 @@ const registerSW = async () => {
       }),
     }).then(console.log);
 
-    registered.value = true;
+    swReady.value = true;
+  swBusy.value = false;
   });
 };
 
 const unregisterSW = async () => {
-  let registration = await navigator.serviceWorker.getRegistration();
-  if (registration) {
-    let sub = await registration.pushManager.getSubscription();
+  swBusy.value = true;
+  let reg = await navigator.serviceWorker.getRegistration();
+  if (reg) {
+    let sub = await reg.pushManager.getSubscription();
 
     await $fetch('/api/unsubscribe', {
       method: 'post',
@@ -81,18 +85,16 @@ const unregisterSW = async () => {
     if (sub) {
       await sub.unsubscribe();
     }
-    await registration.unregister();
+    await reg.unregister();
   }
   
-  registered.value = false;
+  swReady.value = false;
+  swBusy.value = false;
 };
 
-const reregisterSW = async () => {
-  await unregisterSW();
+if (notificationsGranted.value) {
   await registerSW();
 }
-
-await registerSW();
 
 </script>
 
@@ -103,8 +105,8 @@ await registerSW();
     </header>
     <main>
       <div class="row">
-        <span>notification permissions: {{permissionGranted}}</span>
-        <button @click="requestPermissions">request</button>
+        <span>notification permissions: {{notificationsGranted}}</span>
+        <button @click="requestPermissions" :disabled="notificationsGranted">request</button>
       </div>
       <div class="row">
         <span>test local notification</span>
@@ -115,8 +117,9 @@ await registerSW();
         <button @click="sendRemoteNotification">send</button>
       </div>
       <div class="row">
-        <span>serviceworker and webpush: {{registered}}</span>
-        <button @click="reregisterSW">reregister</button>
+        <span>serviceworker and webpush ready: {{swReady}}</span>
+        <button v-if="swReady" @click="unregisterSW" :disabled="swBusy">unregister</button>
+        <button v-else @click="registerSW" :disabled="swBusy">register</button>
       </div>
     </main>
   </div>
@@ -139,6 +142,10 @@ button {
 
 button:active {
   background: var(--bg3);
+}
+
+button:disabled {
+  color: var(--fg2);
 }
 
 .title {

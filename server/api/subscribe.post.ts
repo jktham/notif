@@ -1,5 +1,5 @@
 import { PushSubscription } from "web-push";
-import { addSub } from "../subs";
+import { addSub, hasSub } from "../subs";
 
 export default defineEventHandler(async event => {
   let body = await readBody<{subscription: PushSubscription}>(event);
@@ -8,8 +8,13 @@ export default defineEventHandler(async event => {
     return "missing subscription";
   }
 
+  if (hasSub(body.subscription)) {
+    setResponseStatus(event, 200);
+    return `already subscribed: ${body.subscription.endpoint.slice(-10)}`;
+  }
+
   addSub(body.subscription);
   
   setResponseStatus(event, 200);
-  return "subscribed successfully";
+    return `subscribed successfully: ${body.subscription.endpoint.slice(-10)}`;
 });

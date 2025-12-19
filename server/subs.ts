@@ -13,6 +13,7 @@ export function getSubs(): PushSubscription[] {
 
 export function setSubs(subs: PushSubscription[]) {
   writeFileSync("./subs.json", JSON.stringify(subs));
+  console.log(`updated subs.json: [${subs.map(s => s.endpoint.slice(-10)).join(", ")}]`);
 }
 
 export function addSub(sub: PushSubscription) {
@@ -26,6 +27,14 @@ export function addSub(sub: PushSubscription) {
 
 export function removeSub(sub: PushSubscription) {
   let subs = getSubs();
+  if (!subs.find(s => JSON.stringify(s) === JSON.stringify(sub))) {
+    return;
+  }
   subs = subs.filter(s => JSON.stringify(s) !== JSON.stringify(sub));
   setSubs(subs);
+}
+
+export function hasSub(sub: PushSubscription): boolean {
+  let subs = getSubs();
+  return subs.some(s => JSON.stringify(s) === JSON.stringify(sub));
 }
