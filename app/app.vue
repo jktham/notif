@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import "assets/base.css";
+import { type NotifContent } from '~~/server/api/send.post';
 
 // notifications
 let notificationsGranted = ref(Notification.permission === "granted");
@@ -10,14 +11,14 @@ const requestPermissions = async () => {
   notificationsGranted.value = (p === "granted");
 }
 
-const sendLocalNotification = () => {
+const testLocalNotification = () => {
   let n = new Notification("hi c:", {
     body: "local",
     icon: "/favicon.ico"
   });
 }
 
-const sendRemoteNotification = async () => {
+const testRemoteNotification = async () => {
   await $fetch("/api/send", {
     method: "post",
     body: {
@@ -35,7 +36,7 @@ let swBusy = ref(false);
 const registerSW = async () => {
   swBusy.value = true;
   navigator.serviceWorker.register("/sw.js");
-  navigator.serviceWorker.ready.then(async registration => {
+  await navigator.serviceWorker.ready.then(async registration => {
     console.log("service worker ready");
 
     let sub = await registration.pushManager.getSubscription().then(async subscription => {
@@ -56,13 +57,13 @@ const registerSW = async () => {
       headers: {
         'Content-type': 'application/json'
       },
-      body: JSON.stringify({
+      body: {
         subscription: sub
-      }),
+      },
     }).then(console.log);
 
     swReady.value = true;
-  swBusy.value = false;
+    swBusy.value = false;
   });
 };
 
@@ -77,9 +78,9 @@ const unregisterSW = async () => {
       headers: {
         'Content-type': 'application/json'
       },
-      body: JSON.stringify({
+      body: {
         subscription: sub
-      }),
+      },
     }).then(console.log);
 
     if (sub) {
@@ -96,6 +97,27 @@ if (notificationsGranted.value) {
   await registerSW();
 }
 
+// send
+let content = ref<NotifContent>({
+  title: "",
+  body: "",
+  icon: "",
+});
+
+const sendNotification = async (content: NotifContent) => {
+  await $fetch("/api/send", {
+    method: "post",
+    body: content,
+  }).then(console.log);
+};
+
+let curl = computed(() => {
+  let url = new URL(window.location.href);
+  url.pathname = "/api/send";
+  let data = JSON.stringify(content.value).replaceAll("'", "'\\''");
+  return `curl --header "Content-Type: application/json" --request POST --data '${data}' ${url.href}`;
+});
+
 </script>
 
 <template>
@@ -110,16 +132,36 @@ if (notificationsGranted.value) {
       </div>
       <div class="row">
         <span>test local notification</span>
-        <button @click="sendLocalNotification">send</button>
+        <button @click="testLocalNotification">send</button>
       </div>
       <div class="row">
         <span>test remote notification</span>
-        <button @click="sendRemoteNotification">send</button>
+        <button @click="testRemoteNotification">send</button>
       </div>
       <div class="row">
-        <span>serviceworker and webpush ready: {{swReady}}</span>
+        <span>serviceworker, webpush: {{swReady}}</span>
         <button v-if="swReady" @click="unregisterSW" :disabled="swBusy">unregister</button>
         <button v-else @click="registerSW" :disabled="swBusy">register</button>
+      </div>
+      <div class="row">
+        <span>new notification</span>
+        <button @click="sendNotification(content)">send</button>
+      </div>
+      <div class="row">
+        <span>title</span>
+        <input type="text" v-model="content.title" @keyup.enter="sendNotification(content)">
+      </div>
+      <div class="row">
+        <span>body</span>
+        <input type="text" v-model="content.body" @keyup.enter="sendNotification(content)">
+      </div>
+      <div class="row">
+        <span>icon</span>
+        <input type="text" v-model="content.icon" @keyup.enter="sendNotification(content)">
+      </div>
+      <div class="row">
+        <span>curl command</span>
+        <input type="text" readonly :value="curl">
       </div>
     </main>
   </div>
@@ -131,6 +173,7 @@ if (notificationsGranted.value) {
   flex-direction: column;
   gap: 1rem;
   padding: 2rem;
+  max-width: 30rem;
 }
 
 button {
@@ -162,5 +205,12 @@ main {
   display: flex;
   gap: 1rem;
   align-items: center;
+}
+
+.row > span {
+  margin-right: auto;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 </style>
