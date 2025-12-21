@@ -101,7 +101,7 @@ if (notificationsGranted.value) {
 let content = ref<NotifContent>({
   title: "",
   body: "",
-  icon: "",
+  icon: "/favicon.ico",
 });
 
 const sendNotification = async (content: NotifContent) => {
@@ -161,7 +161,7 @@ let curl = computed(() => {
       </div>
       <div class="row">
         <span>curl command</span>
-        <input type="text" readonly :value="curl">
+        <input type="text" readonly :value="curl" @focus="($event.target as HTMLInputElement).select()">
       </div>
     </main>
   </div>
