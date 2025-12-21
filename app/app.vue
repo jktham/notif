@@ -3,6 +3,11 @@ import { ref } from 'vue';
 import "assets/base.css";
 import { type NotifContent } from '~~/server/types';
 
+// status
+const status = computed(() => {
+  return notificationsGranted.value && swReady.value ? `listening on ${subKey.value}` : "not ready";
+});
+
 // notifications
 let notificationsGranted = ref(Notification.permission === "granted");
 
@@ -32,6 +37,7 @@ const testRemoteNotification = async () => {
 // service worker
 let swReady = ref(false);
 let swBusy = ref(false);
+let subKey = ref<string>("");
 
 const registerSW = async () => {
   swBusy.value = true;
@@ -64,6 +70,7 @@ const registerSW = async () => {
 
     swReady.value = true;
     swBusy.value = false;
+    subKey.value = sub.endpoint.slice(-8);
   });
 };
 
@@ -91,6 +98,7 @@ const unregisterSW = async () => {
   
   swReady.value = false;
   swBusy.value = false;
+  subKey.value = "";
 };
 
 if (notificationsGranted.value) {
@@ -124,11 +132,17 @@ let curl = computed(() => {
   <div class="app">
     <header>
       <h1 class="title">notif</h1>
+      <h1 class="status">{{status}}</h1>
     </header>
     <main>
       <div class="row">
         <span>notification permissions: {{notificationsGranted}}</span>
         <button @click="requestPermissions" :disabled="notificationsGranted">request</button>
+      </div>
+      <div class="row">
+        <span>serviceworker, webpush: {{swReady}}</span>
+        <button v-if="swReady" @click="unregisterSW" :disabled="swBusy">unregister</button>
+        <button v-else @click="registerSW" :disabled="swBusy">register</button>
       </div>
       <div class="row">
         <span>test local notification</span>
@@ -137,11 +151,6 @@ let curl = computed(() => {
       <div class="row">
         <span>test remote notification</span>
         <button @click="testRemoteNotification">send</button>
-      </div>
-      <div class="row">
-        <span>serviceworker, webpush: {{swReady}}</span>
-        <button v-if="swReady" @click="unregisterSW" :disabled="swBusy">unregister</button>
-        <button v-else @click="registerSW" :disabled="swBusy">register</button>
       </div>
       <div class="row">
         <span>new notification</span>
@@ -191,8 +200,23 @@ button:disabled {
   color: var(--fg2);
 }
 
+header {
+  display: flex;
+  align-items: end;
+  gap: 1rem;
+}
+
 .title {
   font-size: 3rem;
+  margin-right: auto;
+}
+
+.status {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 main {
@@ -207,7 +231,7 @@ main {
   align-items: center;
 }
 
-.row > span {
+.row > :first-child {
   margin-right: auto;
   white-space: nowrap;
   text-overflow: ellipsis;

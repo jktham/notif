@@ -10,11 +10,11 @@ export default defineEventHandler(async event => {
 
   if (hasSub(body.subscription)) {
     setResponseStatus(event, 200);
-    return `already subscribed: ${body.subscription.endpoint.slice(-10)}`;
+    return `already subscribed: ${body.subscription.endpoint.slice(-8)}`;
   }
 
   addSub(body.subscription);
   
   setResponseStatus(event, 200);
-    return `subscribed successfully: ${body.subscription.endpoint.slice(-10)}`;
+    return `subscribed successfully: ${body.subscription.endpoint.slice(-8)}`;
 });

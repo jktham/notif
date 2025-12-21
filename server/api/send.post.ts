@@ -25,14 +25,14 @@ export default defineEventHandler(async event => {
         body: content.body ?? "",
         icon: content.icon ?? ""
       }));
-      console.log(`sent notification: ${sub.endpoint.slice(-10)}`);
+      console.log(`sent notification: ${sub.endpoint.slice(-8)}`);
       count++;
 
     } catch (e) {
-      console.error(`error sending notification: ${sub.endpoint.slice(-10)}, ${e}`);
+      console.error(`error sending notification: ${sub.endpoint.slice(-8)}, ${e}`);
     }
   }
 
   setResponseStatus(event, 200);
-  return `successfully sent ${count} notifications`;
+  return `sent ${count} notification${count != 1 ? "s" : ""}`;
 });

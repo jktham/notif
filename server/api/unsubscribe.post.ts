@@ -10,11 +10,11 @@ export default defineEventHandler(async event => {
   
   if (!hasSub(body.subscription)) {
     setResponseStatus(event, 200);
-    return `not subscribed: ${body.subscription.endpoint.slice(-10)}`;
+    return `not subscribed: ${body.subscription.endpoint.slice(-8)}`;
   }
 
   removeSub(body.subscription);
   
   setResponseStatus(event, 200);
-    return `unsubscribed successfully: ${body.subscription.endpoint.slice(-10)}`;
+    return `unsubscribed successfully: ${body.subscription.endpoint.slice(-8)}`;
 });

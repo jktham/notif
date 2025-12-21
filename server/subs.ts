@@ -13,7 +13,7 @@ export function getSubs(): PushSubscription[] {
 
 export function setSubs(subs: PushSubscription[]) {
   writeFileSync("./subs.json", JSON.stringify(subs));
-  console.log(`updated subs.json: [${subs.map(s => s.endpoint.slice(-10)).join(", ")}]`);
+  console.log(`updated subs.json: [${subs.map(s => s.endpoint.slice(-8)).join(", ")}]`);
 }
 
 export function addSub(sub: PushSubscription) {
