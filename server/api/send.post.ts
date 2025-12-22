@@ -19,12 +19,13 @@ export default defineEventHandler(async event => {
   let count = 0;
   for (let sub of subs) {
     try {
-      let details = webpush.generateRequestDetails(sub as PushSubscription);
-      let res = await webpush.sendNotification(sub, JSON.stringify({
+      await webpush.sendNotification(sub, JSON.stringify({
         title: content.title ?? "",
         body: content.body ?? "",
         icon: content.icon ?? ""
-      }));
+      }), {
+        urgency: "high",
+      });
       console.log(`sent notification: ${sub.endpoint.slice(-8)}`);
       count++;
 
