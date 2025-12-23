@@ -23,7 +23,7 @@ export default defineEventHandler(async event => {
         title: content?.title ?? "",
         body: content?.body ?? "",
         icon: content?.icon ?? "",
-        time: Date.now() - 1800000,
+        time: Date.now(),
       }), {
         urgency: "high",
       });
