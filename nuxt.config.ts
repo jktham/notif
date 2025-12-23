@@ -6,6 +6,9 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: "notif",
+      link: [
+        { rel: "manifest", href: "manifest.json" },
+      ],
     },
   },
 })

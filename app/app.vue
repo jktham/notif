@@ -19,7 +19,7 @@ const requestPermissions = async () => {
 const testLocalNotification = () => {
   let n = new Notification("hi c:", {
     body: "local",
-    icon: "/favicon.ico"
+    icon: "/icon.png"
   });
 }
 
@@ -29,7 +29,7 @@ const testRemoteNotification = async () => {
     body: {
       title: "hi c:",
       body: "remote",
-      icon: "/favicon.ico"
+      icon: "/icon.png"
     },
   }).then(console.log);
 }
@@ -109,7 +109,7 @@ if (notificationsGranted.value) {
 let content = ref<NotifContent>({
   title: "",
   body: "",
-  icon: "/favicon.ico",
+  icon: "/icon.png"
 });
 
 const sendNotification = async (content: NotifContent) => {
