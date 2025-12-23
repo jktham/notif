@@ -9,7 +9,7 @@ if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
 webpush.setVapidDetails(
 	"https://notif.jktham.dev",
 	process.env.VAPID_PUBLIC_KEY ?? "",
-	process.env.VAPID_PRIVATE_KEY ?? ""
+	process.env.VAPID_PRIVATE_KEY ?? "",
 );
 
 export default defineEventHandler(async event => {
@@ -20,9 +20,10 @@ export default defineEventHandler(async event => {
   for (let sub of subs) {
     try {
       await webpush.sendNotification(sub, JSON.stringify({
-        title: content.title ?? "",
-        body: content.body ?? "",
-        icon: content.icon ?? ""
+        title: content?.title ?? "",
+        body: content?.body ?? "",
+        icon: content?.icon ?? "",
+        time: Date.now() - 1800000,
       }), {
         urgency: "high",
       });
